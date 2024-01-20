@@ -130,6 +130,8 @@ int main(int argc, char **argv)
   // Variables for the server clients
   struct client clients[MAXCON]; /* list of clients */
   struct hostent *hostp; /* client host info */
+  char *hostname;
+  char hostport[16] = {};
   char *hostaddrp; /* dotted decimal host addr string */
 
   // Check command line arguments
@@ -206,11 +208,17 @@ int main(int argc, char **argv)
     hostp = gethostbyaddr((const char *) &clientaddr.sin_addr.s_addr, 
 			  sizeof(&clientaddr.sin_addr.s_addr), AF_INET);
     if (hostp == NULL)
-      error("ERROR on gethostbyaddr");
+      // error("ERROR on gethostbyaddr");
+      hostname = "Unknown Host\0";
+    else
+      hostname = hostp->h_name;
     hostaddrp = inet_ntoa(clients[clientIndex].clientaddr.sin_addr);
     if (hostaddrp == NULL)
       error("ERROR on inet_ntoa\n");
-    printf("server established connection with %s (%s)\n", hostp->h_name, hostaddrp);
+    memset(hostport, 0, sizeof(hostport));
+    sprintf(hostport, "%d", clientaddr.sin_port);
+    puts("help");
+    printf("server established connection with %s (%s:%s)\n", hostname, hostaddrp, hostport);
 
     pthread_create(&clients[clientIndex].tid, NULL, clientreceive, (void *) (struct client *) &clients[clientIndex]);
   }
